@@ -1,6 +1,5 @@
 <?php
-// app/includes/functions.php
-// Helpers reutilizables
+// /includes/functions.php
 
 if (!function_exists('url_with')) {
     function url_with($overrides = []) {

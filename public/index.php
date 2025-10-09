@@ -1,7 +1,7 @@
 <?php
 // public/index.php
-require_once __DIR__ . '/../app/includes/db_connect.php';
-require_once __DIR__ . '/../app/includes/functions.php';
+require_once __DIR__ . '/../includes/db_connect.php';
+require_once __DIR__ . '/../includes/functions.php';
 
 // Obtener tablas
 $tablesRes = $conexion->query("SHOW TABLES");
@@ -88,7 +88,6 @@ if ($tabla) {
 // include header
 include __DIR__ . '/../templates/header.php';
 
-// print rows
 if (empty($columns)) {
 } else {
     if (count($rows) > 0) {

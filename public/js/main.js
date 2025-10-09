@@ -19,64 +19,84 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = row.textContent.toLowerCase();
         row.style.display = text.includes(q) ? '' : 'none';
       }
+      if (typeof updateStickySpace === 'function') updateStickySpace();
+      if (typeof updateProgressFromScroll === 'function') updateProgressFromScroll();
     });
   }
 
-// ===== Scroll progress bar sync =====
-if (tw && scrollInner && progressScroll) {
+  // ===== Scroll progress bar sync =====
   function updateProgressFromScroll() {
-    const maxScroll = tw.scrollWidth - tw.clientWidth;
+    if (!tw || !scrollInner || !progressScroll) return;
+    const maxScroll = Math.max(0, tw.scrollWidth - tw.clientWidth);
+    if (maxScroll === 0) {
+      scrollInner.style.width = '0%';
+      return;
+    }
     const pct = (tw.scrollLeft / maxScroll) * 100;
     scrollInner.style.width = Math.min(Math.max(pct, 0), 100) + '%';
   }
 
-  tw.addEventListener('scroll', updateProgressFromScroll);
-  setTimeout(updateProgressFromScroll, 60);
+  if (tw && scrollInner && progressScroll) {
+    tw.addEventListener('scroll', updateProgressFromScroll);
+    setTimeout(updateProgressFromScroll, 60);
 
-  let dragging = false;
+    let dragging = false;
 
-  function scrollToPosition(clientX) {
-    const rect = progressScroll.getBoundingClientRect();
-    const x = Math.max(0, Math.min(clientX - rect.left, rect.width));
-    const scrollValue = (x / rect.width) * (tw.scrollWidth - tw.clientWidth);
-    tw.scrollLeft = scrollValue;
-    updateProgressFromScroll();
+    function scrollToPosition(clientX) {
+      const rect = progressScroll.getBoundingClientRect();
+      const trackWidth = rect.width || 0;
+      if (trackWidth <= 0) return;
+
+      const x = Math.max(0, Math.min(clientX - rect.left, trackWidth));
+      const denom = trackWidth;
+      const scrollable = Math.max(0, tw.scrollWidth - tw.clientWidth);
+      if (scrollable <= 0) {
+        // nothing to scroll
+        return;
+      }
+      const scrollValue = (x / denom) * scrollable;
+      if (Number.isFinite(scrollValue)) {
+        tw.scrollLeft = scrollValue;
+        updateProgressFromScroll();
+      }
+    }
+
+    // Clic simple
+    progressScroll.addEventListener('click', ev => {
+      try { scrollToPosition(ev.clientX); } catch (e) { /* silent */ }
+    });
+
+    // Arrastre con mouse
+    progressScroll.addEventListener('mousedown', ev => {
+      dragging = true;
+      document.body.classList.add('no-select');
+      try { scrollToPosition(ev.clientX); } catch (e) { /* silent */ }
+    });
+
+    window.addEventListener('mousemove', ev => {
+      if (!dragging) return;
+      try { scrollToPosition(ev.clientX); } catch (e) { /* silent */ }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!dragging) return;
+      dragging = false;
+      document.body.classList.remove('no-select');
+    });
+
+    // Touch (móvil)
+    progressScroll.addEventListener('touchstart', ev => {
+      dragging = true;
+      try { scrollToPosition(ev.touches[0].clientX); } catch (e) { /* silent */ }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', ev => {
+      if (!dragging) return;
+      try { scrollToPosition(ev.touches[0].clientX); } catch (e) { /* silent */ }
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => { dragging = false; });
   }
-
-  progressScroll.addEventListener('click', ev => scrollToPosition(ev.clientX));
-
-  // Arrastre con mouse
-  progressScroll.addEventListener('mousedown', ev => {
-    dragging = true;
-    document.body.classList.add('no-select');
-    scrollToPosition(ev.clientX);
-  });
-
-  window.addEventListener('mousemove', ev => {
-    if (!dragging) return;
-    scrollToPosition(ev.clientX);
-  });
-
-  window.addEventListener('mouseup', () => {
-    if (!dragging) return;
-    dragging = false;
-    document.body.classList.remove('no-select');
-  });
-
-  // Touch (movil)
-  progressScroll.addEventListener('touchstart', ev => {
-    dragging = true;
-    scrollToPosition(ev.touches[0].clientX);
-  }, { passive: true });
-
-  window.addEventListener('touchmove', ev => {
-    if (!dragging) return;
-    scrollToPosition(ev.touches[0].clientX);
-  }, { passive: true });
-
-  window.addEventListener('touchend', () => dragging = false);
-}
-
 
   // Modal view / create / edit / delete handlers
   const verBtns = document.querySelectorAll('.ver');
@@ -217,6 +237,7 @@ if (tw && scrollInner && progressScroll) {
     });
   });
 
+  // ===== Sticky column fix =====
   function updateStickySpace() {
     const table = document.querySelector('.table');
     const tw = document.querySelector('.table-wrap');
@@ -234,19 +255,32 @@ if (tw && scrollInner && progressScroll) {
 
     table.querySelectorAll('.spacer-col').forEach(el => el.remove());
     tw.style.paddingRight = '0px';
-    if (typeof updateProgressFromScroll === 'function') updateProgressFromScroll();
+
+    try {
+      if (typeof updateProgressFromScroll === 'function') updateProgressFromScroll();
+    } catch (e) { /* silent */ }
   }
 
   updateStickySpace();
   let _tmoSticky;
   window.addEventListener('resize', () => {
     clearTimeout(_tmoSticky);
-    _tmoSticky = setTimeout(updateStickySpace, 120);
+    _tmoSticky = setTimeout(() => {
+      updateStickySpace();
+      if (typeof updateProgressFromScroll === 'function') updateProgressFromScroll();
+    }, 120);
   });
+
   if (window.MutationObserver) {
-    const moSticky = new MutationObserver(() => updateStickySpace());
+    const moSticky = new MutationObserver(() => {
+      clearTimeout(_tmoSticky);
+      _tmoSticky = setTimeout(() => {
+        updateStickySpace();
+        if (typeof updateProgressFromScroll === 'function') updateProgressFromScroll();
+      }, 80);
+    });
     const table = document.querySelector('.table');
     if (table) moSticky.observe(table, { childList: true, subtree: true, attributes: true });
   }
 
-});
+}); // DOMContentLoaded
