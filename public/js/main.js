@@ -50,10 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
       const x = Math.max(0, Math.min(clientX - rect.left, trackWidth));
       const denom = trackWidth;
       const scrollable = Math.max(0, tw.scrollWidth - tw.clientWidth);
-      if (scrollable <= 0) {
-        // nothing to scroll
-        return;
-      }
+      if (scrollable <= 0) return;
+
       const scrollValue = (x / denom) * scrollable;
       if (Number.isFinite(scrollValue)) {
         tw.scrollLeft = scrollValue;
@@ -61,12 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    // Clic simple
+    // Clic y arrastre
     progressScroll.addEventListener('click', ev => {
       try { scrollToPosition(ev.clientX); } catch (e) { /* silent */ }
     });
 
-    // Arrastre con mouse
     progressScroll.addEventListener('mousedown', ev => {
       dragging = true;
       document.body.classList.add('no-select');
@@ -105,6 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const modalVer = modalVerEl ? new bootstrap.Modal(modalVerEl) : null;
   const modalForm = modalFormEl ? new bootstrap.Modal(modalFormEl) : null;
 
+  // ===== Ver registro =====
   verBtns.forEach(btn => {
     btn.addEventListener('click', async () => {
       const id = btn.dataset.id;
@@ -112,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
       body.innerHTML = '<p class="text-muted text-center">Cargando...</p>';
       if (modalVer) modalVer.show();
       try {
-        const res = await fetch('app/ajax/get_record.php?tabla=' + encodeURIComponent(tabla) + '&id=' + encodeURIComponent(id));
+        const res = await fetch('tables/read_table.php?tabla=' + encodeURIComponent(tabla) + '&id=' + encodeURIComponent(id));
         if (res.ok) {
           const data = await res.json();
           if (data && data.row) {
@@ -139,7 +137,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // new/edit/delete
+  // ===== Crear / Editar =====
   document.getElementById('btn-new')?.addEventListener('click', () => openFormModal('create'));
   document.querySelectorAll('.editar').forEach(btn => btn.addEventListener('click', () => openFormModal('edit', btn.dataset.id)));
 
@@ -147,11 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const titleEl = document.getElementById('modalFormTitle');
     const bodyEl = document.getElementById('modalFormBody');
     titleEl.textContent = mode === 'create' ? 'Nuevo registro' : 'Editar registro #' + id;
-    let html = '<div class="row g-3">';
     let rowData = {};
+
     if (mode === 'edit' && id) {
       try {
-        const res = await fetch('app/ajax/get_record.php?tabla=' + encodeURIComponent(tabla) + '&id=' + encodeURIComponent(id));
+        const res = await fetch('tables/read_table.php?tabla=' + encodeURIComponent(tabla) + '&id=' + encodeURIComponent(id));
         if (res.ok) {
           const j = await res.json();
           if (j && j.row) rowData = j.row;
@@ -164,80 +162,96 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     }
+
+    let html = '<form id="formDynamic" novalidate>';
+    html += '<div class="row g-3">';
     if (!columns || columns.length === 0) {
       html += '<div class="col-12"><p class="text-muted">No hay esquema para esta tabla.</p></div>';
     } else {
       columns.forEach((c) => {
+        const value = (rowData[c] ?? '')?.toString().replaceAll('"', '&quot;');
+        const isPk = (c === pk);
         html += `<div class="col-md-6"><label class="form-label">${c}</label>
-                 <input name="${c}" class="form-control" value="${(rowData[c] ?? '')}"></div>`;
+                 <input name="${c}" class="form-control" value="${value}" ${isPk && mode==='create' ? 'readonly' : ''}></div>`;
       });
     }
     html += '</div>';
+
     bodyEl.innerHTML = html;
 
-    document.getElementById('formDynamic').onsubmit = async (ev) => {
+    const formEl = document.getElementById('formDynamic');
+    if (!formEl) return;
+    formEl.addEventListener('submit', async (ev) => {
       ev.preventDefault();
-      const form = ev.target;
+
       const data = {};
-      for (const el of form.elements) {
+      for (const el of formEl.elements) {
         if (!el.name) continue;
         data[el.name] = el.value;
       }
+
       try {
-        const res = await fetch('app/ajax/save_record.php', {
+        const endpoint = 'tables/' + (mode === 'create' ? 'create_table.php' : 'update_table.php');
+        const url = mode === 'edit' && id ? `${endpoint}?id=${encodeURIComponent(id)}` : endpoint;
+        const res = await fetch(url, {
           method: 'POST',
-          headers: {'Content-Type':'application/json'},
+          headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({ tabla, mode, id, data })
         });
         if (res.ok) {
           const j = await res.json();
           if (j.success) {
-            alert('Guardado correctamente.');
             if (modalForm) modalForm.hide();
             location.reload();
             return;
           } else {
-            alert('Error: ' + (j.message || 'no guardado'));
-            return;
+            alert('Error: ' + (j.message || 'No guardado'));
           }
+        } else {
+          alert('Error en la petición al servidor.');
         }
       } catch (e) {
-        alert('Simulado: endpoint save_record.php no disponible.');
-        if (modalForm) modalForm.hide();
+        alert('Error al guardar. Revisa la conexión con PHP.');
       }
-    };
+    });
 
     if (modalForm) modalForm.show();
   }
 
+  // ===== Eliminar registro =====
   document.querySelectorAll('.eliminar').forEach(btn => {
     btn.addEventListener('click', async () => {
       const id = btn.dataset.id;
       if (!confirm('¿Eliminar este registro?')) return;
-      try {
-        const res = await fetch('app/ajax/delete_record.php', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ tabla, id })
-        });
-        if (res.ok) {
-          const j = await res.json();
-          if (j.success) {
-            alert('Eliminado.');
-            location.reload();
-            return;
-          } else {
-            alert('Respuesta: ' + (j.message || 'error'));
+        try {
+          const res = await fetch('tables/delete_table.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ tabla, id })
+          });
+        
+          const text = await res.text();
+          let j;
+          try {
+            j = JSON.parse(text);
+          } catch (e) {
+            console.error('Respuesta PHP no es JSON:', text);
+            alert('Error en PHP: ' + text);
             return;
           }
-        }
-      } catch (e) {
-        alert('Eliminación simulada (endpoint no disponible). Recarga para ver cambios reales.');
-      }
+        
+          if (j.success) {
+            alert('Eliminado correctamente.');
+            location.reload();
+          } else  alert('Error: ' + (j.message || 'No eliminado'));
+        
+        } catch (e) {
+          alert('Error de conexión con PHP: ' + e.message);
+        }  
     });
   });
 
-  // ===== Sticky column fix =====
+  // ===== sticky column fix =====
   function updateStickySpace() {
     const table = document.querySelector('.table');
     const tw = document.querySelector('.table-wrap');

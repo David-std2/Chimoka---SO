@@ -1,6 +1,6 @@
 <?php
 // templates/header.php
-// Requiere que variables como $tabla, $tables, $filterCandidates, $distinctValues, $filters, $q, $columns, $limit existan
+// $tabla, $tables, $filterCandidates, $distinctValues, $filters, $q, $columns, $limit existan
 ?>
 <!doctype html>
 <html lang="es">

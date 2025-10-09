@@ -74,38 +74,39 @@
   </main>
 
   <!-- Modal Ver -->
-  <div class="modal fade" id="modalVer" tabindex="-1">
+  <div class="modal fade" id="modalVer" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title">Detalles del registro</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <h5 class="modal-title"><i class="bi bi-eye-fill"></i> Detalles del registro</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
         </div>
         <div class="modal-body" id="modalVerBody">
           <p class="text-muted text-center">Cargando...</p>
         </div>
         <div class="modal-footer">
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          <div class="me-auto"></div>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Modal Crear/editar -->
-  <div class="modal fade" id="modalForm" tabindex="-1">
+  <div class="modal fade" id="modalForm" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
       <div class="modal-content">
-        <form id="formDynamic">
+        <form id="formDynamic" autocomplete="off">
           <div class="modal-header">
-            <h5 class="modal-title" id="modalFormTitle">Nuevo registro</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <h5 class="modal-title" id="modalFormTitle"><i class="bi bi-plus-lg"></i> Nuevo registro</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
           </div>
           <div class="modal-body" id="modalFormBody">
             <p class="text-muted">Cargando formulario...</p>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Guardar</button>
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> Cancelar</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar</button>
           </div>
         </form>
       </div>
