@@ -32,7 +32,7 @@ body{
   box-shadow: 0 6px 18px rgba(15, 30, 40, 0.12);
   z-index: 30;
 }
-.sidebar-logo-img { width: 52px; height: 52px; border-radius: 0; opacity: 0.85; margin-bottom: 20px;}
+.sidebar-logo-img { width: 52px; height: 52px; border-radius: 0; opacity: 0.9; margin-bottom: 20px;}
 
 /* icon buttons */
 .icon-btn{
@@ -264,3 +264,106 @@ body{
 
 .table-sm th { font-weight: 600; width: 36%; color: #34484a; }
 .table-sm td { color: #24343a; }
+
+/* --- LOGIN CHIMOKA --- */
+body.login-page {
+  background: #f1f5f7;
+  font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: #0f1724;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  margin: 0;
+}
+
+.login-card {
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(13,30,37,0.06);
+  border: 1px solid rgba(15,30,40,0.05);
+  width: 380px;
+  padding: 40px 36px;
+  text-align: center;
+  animation: fadeInUp .4s ease;
+}
+
+.login-card img {
+  width: 70px;
+  height: 70px;
+  margin-bottom: 18px;
+  opacity: 0.92;
+}
+
+.login-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #143a40;
+  margin-bottom: 1.5rem;
+}
+
+.login-card .form-label {
+  font-weight: 600;
+  color: #24343a;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.login-card .form-control {
+  border-radius: 10px;
+  border: 1px solid #e6eef0;
+  padding: 10px 12px;
+  background: #fbfdfe;
+  color: #10232a;
+  box-shadow: none;
+  transition: border-color .12s ease, box-shadow .12s ease;
+}
+
+.login-card .form-control:focus {
+  border-color: rgba(15,59,68,0.9);
+  box-shadow: 0 6px 18px rgba(15,59,68,0.06);
+  outline: none;
+}
+
+.login-card .btn-login {
+  width: 100%;
+  background: var(--btn-yellow);
+  color: #071416;
+  border-radius: 10px;
+  padding: 10px;
+  font-weight: 600;
+  border: none;
+  transition: background 0.15s ease-in-out;
+}
+
+.login-card .btn-login:hover {
+  background: var(--btn-yellow-hover);
+}
+
+.login-card .small-link {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--accent-dark);
+  text-decoration: none;
+  font-size: 0.85rem;
+}
+
+.login-card .small-link:hover {
+  text-decoration: underline;
+}
+
+.alert-danger.small {
+  border-radius: 10px;
+  font-size: 0.85rem;
+  padding: 0.55rem 0.75rem;
+  background: #ffecec;
+  color: #902c2c;
+  border: 1px solid rgba(255,0,0,0.08);
+  text-align: left;
+}
+
+/* Simple fade animation */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}

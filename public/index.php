@@ -1,5 +1,9 @@
 <?php
 // public/index.php
+
+require_once __DIR__ . '/../includes/auth.php';
+require_login('auth/login.php');
+
 require_once __DIR__ . '/../includes/db_connect.php';
 require_once __DIR__ . '/../includes/functions.php';
 require_once __DIR__ . '/../public/tables/read_table.php';

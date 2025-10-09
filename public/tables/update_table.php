@@ -23,12 +23,10 @@ if (!$desc) jsonExit(['success'=>false,'message'=>'no_schema']);
 $schema = [];
 while ($d = $desc->fetch_assoc()) $schema[$d['Field']] = $d;
 
-// determinar PK
 $pk = null;
 foreach ($schema as $col => $meta) if (isset($meta['Key']) && $meta['Key'] === 'PRI') { $pk = $col; break; }
 if (!$pk) $pk = array_key_first($schema);
 
-// construir SET dinámico
 $setParts = []; $values = []; $types = '';
 foreach ($schema as $col => $meta) {
     if ($col === $pk) continue;
@@ -44,7 +42,6 @@ foreach ($schema as $col => $meta) {
 
 if (empty($setParts)) jsonExit(['success'=>false,'message'=>'no_campos_para_actualizar']);
 
-// añadir tipo del pk
 $pkType = 'i';
 $types .= $pkType;
 $values[] = $id;

@@ -25,7 +25,18 @@
     <nav class="nav-icons d-flex flex-column gap-3 align-items-center w-100" role="menu">
       <a href="index.php" class="icon-btn <?= empty($tabla) ? 'active' : '' ?>" title="Tablas"><i class="bi bi-table"></i></a>
       <a href="dashboard.php" class="icon-btn" title="Dashboard"><i class="bi bi-speedometer2"></i></a>
-      <a href="profile.php" class="icon-btn" title="Perfil"><i class="bi bi-person-circle"></i></a>
+
+      <!-- Dropdown perfil -->
+      <div class="dropdown">
+        <a href="#" class="icon-btn dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Perfil">
+          <i class="bi bi-person-circle"></i>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end text-small shadow">
+          <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Perfil</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item text-danger" href="auth/logout.php"><i class="bi bi-box-arrow-right me-2"></i>Salir</a></li>
+        </ul>
+      </div>
     </nav>
 
     <div class="mt-auto mb-3 small-handle">
